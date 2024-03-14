@@ -70,12 +70,15 @@ export default function AccountPage() {
     setWishlistLoaded(false);
     setOrderLoaded(false);
     axios.get('/api/address').then(response => {
-      setName(response.data.name);
-      setEmail(response.data.email);
-      setCity(response.data.city);
-      setPostalCode(response.data.postalCode);
-      setStreetAddress(response.data.streetAddress);
-      setCountry(response.data.country);
+      const userData = response.data;
+      if (userData) {
+        setName(userData.name || '');
+        setEmail(userData.email || '');
+        setCity(userData.city || '');
+        setPostalCode(userData.postalCode || '');
+        setStreetAddress(userData.streetAddress || '');
+        setCountry(userData.country || '');
+      }
       setAddressLoaded(true);
     });
     axios.get('/api/wishlist').then(response => {
