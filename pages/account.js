@@ -70,15 +70,12 @@ export default function AccountPage() {
     setWishlistLoaded(false);
     setOrderLoaded(false);
     axios.get('/api/address').then(response => {
-      const userData = response.data;
-      if (userData) {
-        setName(userData.name || '');
-        setEmail(userData.email || '');
-        setCity(userData.city || '');
-        setPostalCode(userData.postalCode || '');
-        setStreetAddress(userData.streetAddress || '');
-        setCountry(userData.country || '');
-      }
+      setName(response.data.name);
+      setEmail(response.data.email);
+      setCity(response.data.city);
+      setPostalCode(response.data.postalCode);
+      setStreetAddress(response.data.streetAddress);
+      setCountry(response.data.country);
       setAddressLoaded(true);
     });
     axios.get('/api/wishlist').then(response => {
@@ -119,7 +116,7 @@ export default function AccountPage() {
                           <p>Login to see your orders</p>
                         )}
                         {orders.length > 0 && orders.map(o => (
-                          <SingleOrder {...o} />
+                          <SingleOrder key={o} {...o} />
                         ))}
                       </div>
                     )}
