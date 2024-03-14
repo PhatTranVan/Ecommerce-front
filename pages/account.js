@@ -13,6 +13,7 @@ import Spinner from "@/components/Spinner";
 import ProductBox from "@/components/ProductBox";
 import Tabs from "@/components/Tabs";
 import SingleOrder from "@/components/SingleOrder";
+import { withSwal } from "react-sweetalert2";
 
 const ColsWrapper = styled.div`
   display:grid;
@@ -35,7 +36,7 @@ const WishedProductsGrid = styled.div`
   gap: 40px;
 `;
 
-export default function AccountPage() {
+function AccountPage({swal}) {
   const {data:session} = useSession();
   const [name,setName] = useState('');
   const [email,setEmail] = useState('');
@@ -60,7 +61,12 @@ export default function AccountPage() {
   }
   function saveAddress() {
     const data = {name,email,city,streetAddress,postalCode,country};
-    axios.put('/api/address', data);
+    axios.put('/api/address', data).then(() => {
+      swal.fire({ // Hiển thị thông báo khi lưu thành công
+        title: 'Address saved!',
+        icon: 'success',
+      });
+    });
   }
   useEffect(() => {
     if (!session) {
@@ -216,3 +222,7 @@ export default function AccountPage() {
     </>
   );
 }
+
+export default withSwal(({ swal }) => ( // Bọc AccountPage với withSwal
+  <AccountPage swal={swal} /> // Chuyển prop swal vào AccountPage
+));
