@@ -1,15 +1,16 @@
 import Header from "@/components/Header";
 import Center from "@/components/Center";
-import {Category} from "@/models/Category";
-import {Product} from "@/models/Product";
+import { Category } from "@/models/Category";
+import { Product } from "@/models/Product";
 import ProductBox from "@/components/ProductBox";
 import styled from "styled-components";
 import Link from "next/link";
-import {RevealWrapper} from "next-reveal";
-import {mongooseConnect} from "@/lib/mongoose";
-import {getServerSession} from "next-auth";
-import {authOptions} from "@/pages/api/auth/[...nextauth]";
-import {WishedProduct} from "@/models/WishedProduct";
+import { RevealWrapper } from "next-reveal";
+import { mongooseConnect } from "@/lib/mongoose";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { WishedProduct } from "@/models/WishedProduct";
+import Script from "next/script";
 
 const CategoryGrid = styled.div`
   display: grid;
@@ -50,9 +51,16 @@ const ShowAllSquare = styled(Link)`
   text-decoration: none;
 `;
 
-export default function CategoriesPage({mainCategories,categoriesProducts,wishedProducts=[]}) {
+export default function CategoriesPage({ mainCategories, categoriesProducts, wishedProducts = [] }) {
   return (
     <>
+      <Script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></Script>
+      <df-messenger
+        chat-title="Ecommerce Store"
+        agent-id="c8603bc4-e1f8-45ac-bf1d-3d1898fcbf36"
+        language-code="en"
+        customCss={`--df-messenger-button-color: #222;`}
+      ></df-messenger>
       <Header />
       <Center>
         {mainCategories.map(cat => (
@@ -60,17 +68,17 @@ export default function CategoriesPage({mainCategories,categoriesProducts,wished
             <CategoryTitle>
               <h2>{cat.name}</h2>
               <div>
-                <Link href={'/category/'+cat._id}>Show all</Link>
+                <Link href={'/category/' + cat._id}>Show all</Link>
               </div>
             </CategoryTitle>
             <CategoryGrid>
-              {categoriesProducts[cat._id].map((p,index) => (
-                <RevealWrapper key={index} delay={index*50}>
+              {categoriesProducts[cat._id].map((p, index) => (
+                <RevealWrapper key={index} delay={index * 50}>
                   <ProductBox {...p} wished={wishedProducts.includes(p._id)} />
                 </RevealWrapper>
               ))}
-              <RevealWrapper delay={categoriesProducts[cat._id].length*50}>
-                <ShowAllSquare href={'/category/'+cat._id}>
+              <RevealWrapper delay={categoriesProducts[cat._id].length * 50}>
+                <ShowAllSquare href={'/category/' + cat._id}>
                   Show all &rarr;
                 </ShowAllSquare>
               </RevealWrapper>
@@ -94,7 +102,7 @@ export async function getServerSideProps(ctx) {
       .filter(c => c?.parent?.toString() === mainCatId)
       .map(c => c._id.toString());
     const categoriesIds = [mainCatId, ...childCatIds];
-    const products = await Product.find({category: categoriesIds}, null, {limit:3,sort:{'_id':-1}});
+    const products = await Product.find({ category: categoriesIds }, null, { limit: 3, sort: { '_id': -1 } });
     allFetchedProductsId.push(...products.map(p => p._id.toString()))
     categoriesProducts[mainCat._id] = products;
   }
@@ -103,7 +111,7 @@ export async function getServerSideProps(ctx) {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
   const wishedProducts = session?.user
     ? await WishedProduct.find({
-      userEmail:session?.user.email,
+      userEmail: session?.user.email,
       product: allFetchedProductsId,
     })
     : [];

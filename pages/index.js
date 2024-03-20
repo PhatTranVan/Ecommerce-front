@@ -13,16 +13,16 @@ export default function HomePage({ featuredProduct, newProducts, wishedNewProduc
   return (
     <div>
       <Script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></Script>
-      <df-messenger
+      <df-messenger 
         intent="WELCOME"
-        chat-title="cosmetic"
+        chat-title="Ecommerce Store"
         agent-id="c8603bc4-e1f8-45ac-bf1d-3d1898fcbf36"
         language-code="en"
+        customCss={`--df-messenger-button-color: #222;`}
       ></df-messenger>
       <Header />
       <Featured product={featuredProduct} />
       <NewProducts products={newProducts} wishedProducts={wishedNewProducts} />
-
     </div>
   );
 }

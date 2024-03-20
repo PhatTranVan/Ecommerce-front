@@ -1,19 +1,20 @@
 import Header from "@/components/Header";
 import Title from "@/components/Title";
 import Center from "@/components/Center";
-import {signIn, signOut, useSession} from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Button from "@/components/Button";
 import styled from "styled-components";
 import WhiteBox from "@/components/WhiteBox";
-import {RevealWrapper} from "next-reveal";
+import { RevealWrapper } from "next-reveal";
 import Input from "@/components/Input";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
 import ProductBox from "@/components/ProductBox";
 import Tabs from "@/components/Tabs";
 import SingleOrder from "@/components/SingleOrder";
 import { withSwal } from "react-sweetalert2";
+import Script from "next/script";
 
 const ColsWrapper = styled.div`
   display:grid;
@@ -36,18 +37,18 @@ const WishedProductsGrid = styled.div`
   gap: 40px;
 `;
 
-function AccountPage({swal}) {
-  const {data:session} = useSession();
-  const [name,setName] = useState('');
-  const [email,setEmail] = useState('');
-  const [city,setCity] = useState('');
-  const [postalCode,setPostalCode] = useState('');
-  const [streetAddress,setStreetAddress] = useState('');
-  const [country,setCountry] = useState('');
-  const [addressLoaded,setAddressLoaded] = useState(true);
-  const [wishlistLoaded,setWishlistLoaded] = useState(true);
-  const [orderLoaded,setOrderLoaded] = useState(true);
-  const [wishedProducts,setWishedProducts] = useState([]);
+function AccountPage({ swal }) {
+  const { data: session } = useSession();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [streetAddress, setStreetAddress] = useState('');
+  const [country, setCountry] = useState('');
+  const [addressLoaded, setAddressLoaded] = useState(true);
+  const [wishlistLoaded, setWishlistLoaded] = useState(true);
+  const [orderLoaded, setOrderLoaded] = useState(true);
+  const [wishedProducts, setWishedProducts] = useState([]);
   const [activeTab, setActiveTab] = useState('Orders');
   const [orders, setOrders] = useState([]);
 
@@ -60,7 +61,7 @@ function AccountPage({swal}) {
     await signIn('google');
   }
   function saveAddress() {
-    const data = {name,email,city,streetAddress,postalCode,country};
+    const data = { name, email, city, streetAddress, postalCode, country };
     axios.put('/api/address', data).then(() => {
       swal.fire({ // Hiển thị thông báo khi lưu thành công
         title: 'Address saved!',
@@ -103,6 +104,13 @@ function AccountPage({swal}) {
   }
   return (
     <>
+      <Script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></Script>
+      <df-messenger
+        chat-title="Ecommerce Store"
+        agent-id="c8603bc4-e1f8-45ac-bf1d-3d1898fcbf36"
+        language-code="en"
+        customCss={`--df-messenger-button-color: #222;`}
+      ></df-messenger>
       <Header />
       <Center>
         <ColsWrapper>
@@ -110,7 +118,7 @@ function AccountPage({swal}) {
             <RevealWrapper delay={0}>
               <WhiteBox>
                 <Tabs
-                  tabs={['Orders','Wishlist']}
+                  tabs={['Orders', 'Wishlist']}
                   active={activeTab}
                   onChange={setActiveTab}
                 />
@@ -170,42 +178,42 @@ function AccountPage({swal}) {
                 {addressLoaded && session && (
                   <>
                     <Input type="text"
-                           placeholder="Name"
-                           value={name}
-                           name="name"
-                           onChange={ev => setName(ev.target.value)} />
+                      placeholder="Name"
+                      value={name}
+                      name="name"
+                      onChange={ev => setName(ev.target.value)} />
                     <Input type="text"
-                           placeholder="Email"
-                           value={email}
-                           name="email"
-                           onChange={ev => setEmail(ev.target.value)}/>
+                      placeholder="Email"
+                      value={email}
+                      name="email"
+                      onChange={ev => setEmail(ev.target.value)} />
                     <CityHolder>
                       <Input type="text"
-                             placeholder="City"
-                             value={city}
-                             name="city"
-                             onChange={ev => setCity(ev.target.value)}/>
+                        placeholder="City"
+                        value={city}
+                        name="city"
+                        onChange={ev => setCity(ev.target.value)} />
                       <Input type="text"
-                             placeholder="Postal Code"
-                             value={postalCode}
-                             name="postalCode"
-                             onChange={ev => setPostalCode(ev.target.value)}/>
+                        placeholder="Postal Code"
+                        value={postalCode}
+                        name="postalCode"
+                        onChange={ev => setPostalCode(ev.target.value)} />
                     </CityHolder>
                     <Input type="text"
-                           placeholder="Street Address"
-                           value={streetAddress}
-                           name="streetAddress"
-                           onChange={ev => setStreetAddress(ev.target.value)}/>
+                      placeholder="Street Address"
+                      value={streetAddress}
+                      name="streetAddress"
+                      onChange={ev => setStreetAddress(ev.target.value)} />
                     <Input type="text"
-                           placeholder="Country"
-                           value={country}
-                           name="country"
-                           onChange={ev => setCountry(ev.target.value)}/>
+                      placeholder="Country"
+                      value={country}
+                      name="country"
+                      onChange={ev => setCountry(ev.target.value)} />
                     <Button black block
-                            onClick={saveAddress}>
+                      onClick={saveAddress}>
                       Save
                     </Button>
-                    <hr/>
+                    <hr />
                   </>
                 )}
                 {session && (
