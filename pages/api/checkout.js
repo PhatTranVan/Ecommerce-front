@@ -1,25 +1,25 @@
-import {mongooseConnect} from "@/lib/mongoose";
-import {Product} from "@/models/Product";
-import {Order} from "@/models/Order";
-import {getServerSession} from "next-auth";
-import {authOptions} from "@/pages/api/auth/[...nextauth]";
-import {Setting} from "@/models/Setting";
+import { mongooseConnect } from "@/lib/mongoose";
+import { Product } from "@/models/Product";
+import { Order } from "@/models/Order";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { Setting } from "@/models/Setting";
 const stripe = require('stripe')(process.env.STRIPE_SK);
 
-export default async function handler(req,res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.json('should be a POST request');
     return;
   }
   const {
-    name,email,city,
-    postalCode,streetAddress,country,
+    name, email, city,
+    postalCode, streetAddress, country,
     cartProducts,
   } = req.body;
   await mongooseConnect();
   const productsIds = cartProducts;
   const uniqueIds = [...new Set(productsIds)];
-  const productsInfos = await Product.find({_id:uniqueIds});
+  const productsInfos = await Product.find({ _id: uniqueIds });
 
   let line_items = [];
   for (const productId of uniqueIds) {
@@ -30,22 +30,22 @@ export default async function handler(req,res) {
         quantity,
         price_data: {
           currency: 'USD',
-          product_data: {name:productInfo.title},
+          product_data: { name: productInfo.title },
           unit_amount: productInfo.price * 100,
         },
       });
     }
   }
 
-  const session = await getServerSession(req,res,authOptions);
+  const session = await getServerSession(req, res, authOptions);
 
   const orderDoc = await Order.create({
-    line_items,name,email,city,postalCode,
-    streetAddress,country,paid:false,
+    line_items, name, email, city, postalCode,
+    streetAddress, country, paid: false,
     userEmail: session?.user?.email,
   });
 
-  const shippingFeeSetting = await Setting.findOne({name:'shippingFee'});
+  const shippingFeeSetting = await Setting.findOne({ name: 'shippingFee' });
   const shippingFeeCents = parseInt(shippingFeeSetting.value || '0') * 100;
 
   const stripeSession = await stripe.checkout.sessions.create({
@@ -54,21 +54,26 @@ export default async function handler(req,res) {
     customer_email: email,
     success_url: process.env.PUBLIC_URL + '/cart?success=1',
     cancel_url: process.env.PUBLIC_URL + '/cart?canceled=1',
-    metadata: {orderId:orderDoc._id.toString()},
+    metadata: { orderId: orderDoc._id.toString() },
     allow_promotion_codes: true,
     shipping_options: [
       {
         shipping_rate_data: {
           display_name: 'shipping fee',
           type: 'fixed_amount',
-          fixed_amount: {amount: shippingFeeCents, currency: 'USD'},
+          fixed_amount: { amount: shippingFeeCents, currency: 'USD' },
         },
       }
     ],
   });
 
+  await Order.updateOne(
+    { _id: orderDoc._id }, // Điều kiện tìm đơn hàng cần cập nhật
+    { paid: true } // Cập nhật trạng thái thanh toán là true
+  );
+
   res.json({
-    url:stripeSession.url,
+    url: stripeSession.url,
   })
 
 }
